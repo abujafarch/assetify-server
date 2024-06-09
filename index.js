@@ -64,9 +64,13 @@ async function run() {
         app.get('/company/:email', async (req, res) => {
             const email = req.params.email
             const query = { hrEmail: email }
-            console.log(query)
             const result = await companyCollection.findOne(query)
             res.send(result)
+        })
+
+        //adding asset to database
+        app.post('/add-asset', async (req, res) => {
+            
         })
 
         //check user hr or employee and send data to client
