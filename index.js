@@ -30,13 +30,42 @@ async function run() {
         // await client.connect();
         const database = client.db('assetify')
         const userCollection = database.collection('users')
+        const companyCollection = database.collection('companies')
 
 
-        //users create and send to database
+        //employee users create and send to database
         app.post('/users', async (req, res) => {
             const user = req.body
             console.log("i am user", user)
             const result = await userCollection.insertOne(user)
+            res.send(result)
+        })
+
+        // hrManager users create and send to database
+        app.post('/hr-users', async (req, res) => {
+            const user = req.body
+            const hrInsertingInfo = await userCollection.insertOne(user)
+            if (hrInsertingInfo?.insertedId) {
+                const companyName = user.companyName
+                const hrId = hrInsertingInfo.insertedId
+                const companyLogo = user.image
+                const hrEmail = user.email
+                const hrName = user.name
+
+                const company = { companyName, hrEmail, hrId, companyLogo, hrName }
+                const companyInsertingInfo = await companyCollection.insertOne(company)
+
+                res.send({ hrInsertingInfo, companyInsertingInfo })
+            }
+
+        })
+
+        //getting company information
+        app.get('/company/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { hrEmail: email }
+            console.log(query)
+            const result = await companyCollection.findOne(query)
             res.send(result)
         })
 
