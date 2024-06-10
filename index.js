@@ -69,6 +69,14 @@ async function run() {
             res.send(result)
         })
 
+        //getting all assets from database
+        app.get('/assets/:id', async (req, res) => {
+            const companyId = req.params.id
+            const query = { companyId: companyId }
+            const result = await assetCollection.find(query).toArray()
+            res.send(result)
+        })
+
         //adding asset to database
         app.post('/add-asset', async (req, res) => {
             const asset = req.body
