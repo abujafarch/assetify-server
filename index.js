@@ -31,6 +31,7 @@ async function run() {
         const database = client.db('assetify')
         const userCollection = database.collection('users')
         const companyCollection = database.collection('companies')
+        const assetCollection = database.collection('assets')
 
 
         //employee users create and send to database
@@ -70,7 +71,9 @@ async function run() {
 
         //adding asset to database
         app.post('/add-asset', async (req, res) => {
-            
+            const asset = req.body
+            const result = await assetCollection.insertOne(asset)
+            res.send(result)
         })
 
         //check user hr or employee and send data to client
