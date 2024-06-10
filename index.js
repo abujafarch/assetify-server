@@ -84,6 +84,14 @@ async function run() {
             res.send(result)
         })
 
+        //asset deleting from database
+        app.delete('/asset/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await assetCollection.deleteOne(query)
+            res.send(result)
+        })
+
         //check user hr or employee and send data to client
         app.get('/user', async (req, res) => {
             const email = req.query.email
