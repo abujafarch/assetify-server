@@ -52,13 +52,28 @@ async function run() {
                 const companyLogo = user.image
                 const hrEmail = user.email
                 const hrName = user.name
+                const employees = 0
 
-                const company = { companyName, hrEmail, hrId, companyLogo, hrName }
+                const company = { companyName, hrEmail, hrId, companyLogo, hrName, employees }
                 const companyInsertingInfo = await companyCollection.insertOne(company)
 
                 res.send({ hrInsertingInfo, companyInsertingInfo })
             }
 
+        })
+
+        //updating package limit information
+        app.put('/package/:email', async (req, res) => {
+            const email = req.params.email
+            const purchasingPackage = parseInt(req.body.purchasingPackage)
+            const filter = { hrEmail: email }
+            const updatedDoc = {
+                $set: {
+                    package: purchasingPackage
+                }
+            }
+            const result = await companyCollection.updateOne(filter, updatedDoc)
+            res.send(result)
         })
 
         //getting company information
@@ -89,6 +104,13 @@ async function run() {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
             const result = await assetCollection.deleteOne(query)
+            res.send(result)
+        })
+
+        //not hired employees
+        app.get('/not-hired-employees', async (req, res) => {
+            query = { hired: false }
+            const result = await userCollection.find(query).toArray()
             res.send(result)
         })
 
