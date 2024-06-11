@@ -84,6 +84,51 @@ async function run() {
             res.send(result)
         })
 
+        //user affiliation functionality
+        app.put('/user-affiliation/:email', async (req, res) => {
+            const email = req.params.email
+            const companyId = req.body.companyId
+            const filter = { email: email }
+            const updatedDoc = {
+                $set: {
+                    companyId: companyId,
+                    hired: true
+                }
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc)
+            res.send(result)
+        })
+
+        //access all employee that hr affiliated
+        app.get('/my-employees/:companyId', async (req, res) => {
+            const companyId = req.params.companyId
+            const query = { companyId: companyId }
+            const result = await userCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        //add selected employee to the company
+        app.put('/add-employees', async (req, res) => {
+            const emails = req.body.employees
+            const companyId = req.body.companyId
+            
+            const filter = {
+                email: {
+                    $in: emails
+                }
+            }
+
+            const updatedDoc = {
+                $set: {
+                    hired: true,
+                    companyId: companyId
+                }
+            }
+        
+            const result = await userCollection.updateMany(filter, updatedDoc)
+            res.send(result)
+        })
+
         //getting all assets from database
         app.get('/assets/:id', async (req, res) => {
             const companyId = req.params.id
