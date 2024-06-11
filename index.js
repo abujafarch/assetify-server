@@ -111,7 +111,7 @@ async function run() {
         app.put('/add-employees', async (req, res) => {
             const emails = req.body.employees
             const companyId = req.body.companyId
-            
+
             const filter = {
                 email: {
                     $in: emails
@@ -124,8 +124,22 @@ async function run() {
                     companyId: companyId
                 }
             }
-        
+
             const result = await userCollection.updateMany(filter, updatedDoc)
+            res.send(result)
+        })
+
+        //deleting user from team functionality
+        app.delete('/delete-user/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    hired: false,
+                    companyId: ''
+                }
+            }
+            const result = await userCollection.updateOne(filter, updatedDoc)
             res.send(result)
         })
 
