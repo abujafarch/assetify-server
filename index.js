@@ -52,9 +52,8 @@ async function run() {
                 const companyLogo = user.image
                 const hrEmail = user.email
                 const hrName = user.name
-                const employees = 0
 
-                const company = { companyName, hrEmail, hrId, companyLogo, hrName, employees }
+                const company = { companyName, hrEmail, hrId, companyLogo, hrName }
                 const companyInsertingInfo = await companyCollection.insertOne(company)
 
                 res.send({ hrInsertingInfo, companyInsertingInfo })
@@ -82,6 +81,25 @@ async function run() {
             const query = { hrEmail: email }
             const result = await companyCollection.findOne(query)
             res.send(result)
+        })
+
+        //getting employee info
+        app.get('/employee-info/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { email: email }
+            const employee = await userCollection.findOne(query)
+            if (employee.hired) {
+                const query = { _id: new ObjectId(employee.companyId) }
+                const companyInfo = await companyCollection.findOne(query)
+                employee.companyName = companyInfo.companyName
+                employee.companyLogo = companyInfo.companyLogo
+                employee.hrName = companyInfo.hrName
+                res.send(employee)
+            }
+            else {
+                res.send(employee)
+            }
+
         })
 
         //user affiliation functionality
