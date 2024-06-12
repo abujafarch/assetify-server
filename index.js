@@ -110,6 +110,17 @@ async function run() {
             res.send(result)
         })
 
+        //getting my team information for a employee
+        app.get('/my-team/:companyId', async (req, res) => {
+            const companyId = req.params.companyId
+            const query = { companyId: companyId }
+            const company = await companyCollection.findOne({ _id: new ObjectId(companyId) })
+            const hr = await userCollection.findOne({ email: company.hrEmail })
+            const employees = await userCollection.find(query).toArray()
+            const myTeam = [...employees, hr]
+            res.send(myTeam)
+        })
+
         //user affiliation functionality
         app.put('/user-affiliation/:email', async (req, res) => {
             const email = req.params.email
