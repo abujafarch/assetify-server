@@ -120,6 +120,14 @@ async function run() {
             res.send(result)
         })
 
+        //deleting requested item 
+        app.delete('/requested-item/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await assetRequestCollection.deleteOne(query)
+            res.send(result)
+        })
+
         //getting my team information for a employee
         app.get('/my-team/:companyId', async (req, res) => {
             const companyId = req.params.companyId
