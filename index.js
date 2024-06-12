@@ -102,6 +102,14 @@ async function run() {
 
         })
 
+        //getting myCompany assets 
+        app.get('/myCompany-assets/:companyId', async (req, res) => {
+            const companyId = req.params.companyId
+            const query = { companyId: companyId }
+            const result = await assetCollection.find(query).toArray()
+            res.send(result)
+        })
+
         //user affiliation functionality
         app.put('/user-affiliation/:email', async (req, res) => {
             const email = req.params.email
