@@ -32,6 +32,7 @@ async function run() {
         const userCollection = database.collection('users')
         const companyCollection = database.collection('companies')
         const assetCollection = database.collection('assets')
+        const assetRequestCollection = database.collection('assetRequests')
 
 
         //employee users create and send to database
@@ -119,6 +120,13 @@ async function run() {
             const employees = await userCollection.find(query).toArray()
             const myTeam = [...employees, hr]
             res.send(myTeam)
+        })
+
+        //asset request post to request collection
+        app.post('/asset-request', async (req, res) => {
+            const requestItem = req.body
+            const result = await assetRequestCollection.insertOne(requestItem)
+            res.send(result)
         })
 
         //user affiliation functionality
