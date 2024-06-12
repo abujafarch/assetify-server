@@ -111,6 +111,15 @@ async function run() {
             res.send(result)
         })
 
+        //getting my assets of employee
+        app.get('/my-assets/:email', async (req, res) => {
+            const email = req.params.email
+            const query = { requesterEmail: email }
+            const result = await assetRequestCollection.find(query).toArray()
+            // console.log(result);
+            res.send(result)
+        })
+
         //getting my team information for a employee
         app.get('/my-team/:companyId', async (req, res) => {
             const companyId = req.params.companyId
@@ -136,6 +145,28 @@ async function run() {
                 $and: [{ requesterEmail: email }, { status: 'pending' }]
             }
             const result = await assetRequestCollection.find(query).toArray()
+            res.send(result)
+        })
+
+
+        //getting monthly requests for employee
+        app.get('/monthly-requests/:email', async (req, res) => {
+            const email = req.params.email
+            const now = new Date()
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+            const result = await assetRequestCollection.aggregate([
+                {
+                    $match: {
+                        requesterEmail: email,
+                        createdAt: { $gte: firstDayOfMonth.toISOString() }
+                    }
+                },
+                {
+                    $sort: { createdAt: -1 }
+                }
+            ]).toArray()
+
             res.send(result)
         })
 
