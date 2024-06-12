@@ -129,6 +129,16 @@ async function run() {
             res.send(result)
         })
 
+        //getting employee pending requests
+        app.get('/pending-requests/:email', async (req, res) => {
+            const email = req.params.email
+            const query = {
+                $and: [{ requesterEmail: email }, { status: 'pending' }]
+            }
+            const result = await assetRequestCollection.find(query).toArray()
+            res.send(result)
+        })
+
         //user affiliation functionality
         app.put('/user-affiliation/:email', async (req, res) => {
             const email = req.params.email
