@@ -229,6 +229,43 @@ async function run() {
             res.send(result)
         })
 
+        ///getting most requested assets 
+        app.get('/most-requested/:companyId', async (req, res) => {
+
+            const companyId = req.params.companyId
+
+            const result = await assetRequestCollection.aggregate([
+                {
+                    $match: { companyId: companyId }
+                },
+                {
+                    $group: {
+                        _id: {
+                            assetId: '$assetId',
+                            assetName: '$assetName',
+                            assetType: '$assetType'
+                        },
+                        requestCount: { $sum: 1 },
+                    }
+                },
+
+                { $sort: { requestCount: -1 } },
+                { $limit: 4 },
+
+                {
+                    $project: {
+                        _id: 0,
+                        assetId: '$_id.assetId',
+                        assetName: '$_id.assetName',
+                        assetType: '$_id.assetType',
+                        requestCount: 1
+                    }
+                }
+            ]).toArray()
+
+            res.send(result)
+        })
+
         //user affiliation functionality
         app.put('/user-affiliation/:email', async (req, res) => {
             const email = req.params.email
