@@ -239,6 +239,39 @@ async function run() {
             res.send(result)
         })
 
+        //getting returnable and non-returnable item that requested by employee
+        app.get('/employee-returnability/:companyId', async (req, res) => {
+            const companyId = req.params.companyId
+
+            const result = await assetRequestCollection.aggregate([
+                {
+                    $match: { companyId: companyId }
+                },
+                {
+                    $addFields: { assetIdObj: { $toObjectId: '$assetId' } }
+                },
+                {
+                    $lookup: {
+                        from: 'assets',
+                        localField: 'assetIdObj',
+                        foreignField: '_id',
+                        as: 'assetItem'
+                    }
+                },
+                {
+                    $unwind: '$assetItem'
+                },
+                {
+                    $group: {
+                        _id: '$assetItem.returnability',
+                        quantity: { $sum: 1 }
+                    }
+                }
+            ]).toArray()
+
+            res.send(result)
+        })
+
         ///getting most requested assets 
         app.get('/most-requested/:companyId', async (req, res) => {
 
