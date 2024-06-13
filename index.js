@@ -139,34 +139,40 @@ async function run() {
         })
 
         //approving asset process
-        app.put('/approve-asset/:id', async (req, res) => {
-            const id = req.params.id
+        app.put('/approve-asset', async (req, res) => {
+            const assetId = req.query.assetId
+            const requestId = req.query.requestId
+            // console.log(id)
 
-            const quantityResult = await assetCollection.findOne({ _id: new ObjectId(id) })
-            console.log(quantityResult)
+            const quantityResult = await assetCollection.findOne({ _id: new ObjectId(assetId) })
+            // console.log(quantityResult)
             if (quantityResult.quantity === 0) {
                 return res.send({ quantity: 0 })
             }
 
-            const filter = { assetId: id }
+            const filter = { _id: new ObjectId(requestId) }
             const updatedDoc = {
                 $set: {
                     status: 'approved',
                     approveDate: new Date().toLocaleDateString('en-GB')
                 }
             }
+            // const options = { upsert: true }
 
             const approvalResult = await assetRequestCollection.updateOne(filter, updatedDoc)
+
+            console.log(approvalResult);
+
             if (approvalResult.modifiedCount > 0) {
-                const assetDecrement = await assetCollection.updateOne({ _id: new ObjectId(id) }, { $inc: { quantity: -1 } })
+                const assetDecrement = await assetCollection.updateOne({ _id: new ObjectId(assetId) }, { $inc: { quantity: -1 } })
                 res.send(assetDecrement)
             }
         })
 
         //rejecting employee request
-        app.delete('/reject-asset/:assetId', async (req, res) => {
-            const assetId = req.params.assetId
-            const query = { assetId: assetId }
+        app.delete('/reject-asset/:requestId', async (req, res) => {
+            const requestId = req.params.requestId
+            const query = { _id: new ObjectId(requestId) }
             const result = await assetRequestCollection.deleteOne(query)
             res.send(result)
         })
@@ -267,6 +273,46 @@ async function run() {
                         quantity: { $sum: 1 }
                     }
                 }
+            ]).toArray()
+
+            res.send(result)
+        })
+
+        //getting max asset users 
+        app.get('/max-asset-users/:companyId', async (req, res) => {
+            const companyId = req.params.companyId
+
+            const result = await assetRequestCollection.aggregate([
+                {
+                    $match: {
+                        companyId: companyId,
+                        status: 'approved'
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            userName: '$requesterName',
+                            userEmail: '$requesterEmail'
+                        },
+                        quantity: { $sum: 1 }
+                    }
+                },
+                {
+                    $sort: { quantity: -1 }
+                },
+                {
+                    $limit: 3
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        userName: '$_id.userName',
+                        userEmail: '$_id.userEmail',
+                        quantity: 1
+                    }
+                }
+
             ]).toArray()
 
             res.send(result)
