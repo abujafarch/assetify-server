@@ -128,6 +128,48 @@ async function run() {
             res.send(result)
         })
 
+        //getting all requests of employees
+        app.get('/all-requests/:id', async (req, res) => {
+            const id = req.params.id
+            const query = {
+                $and: [{ companyId: id }, { status: 'pending' }]
+            }
+            const result = await assetRequestCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        //approving asset process
+        app.put('/approve-asset/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { assetId: id }
+            const updatedDoc = {
+                $set: {
+                    status: 'approved'
+                }
+            }
+            const approvalResult = await assetRequestCollection.updateOne(filter, updatedDoc)
+            if (approvalResult.modifiedCount > 0) {
+                const assetDecrement = await assetCollection.updateOne({ _id: new ObjectId(id) }, { $inc: { quantity: -1 } })
+                res.send(assetDecrement)
+            }
+        })
+
+        //rejecting employee request
+        app.delete('/reject-asset/:assetId', async (req, res) => {
+            const assetId = req.params.assetId
+            const query = { assetId: assetId }
+            const result = await assetRequestCollection.deleteOne(query)
+            res.send(result)
+        })
+
+        //getting users requests functionality
+        app.get('/users-requests/:companyId', async (req, res) => {
+            const id = req.params.companyId
+            const query = { companyId: id }
+            const result = await assetRequestCollection.find(query).limit(5).toArray()
+            res.send(result)
+        })
+
         //getting my team information for a employee
         app.get('/my-team/:companyId', async (req, res) => {
             const companyId = req.params.companyId
@@ -146,7 +188,7 @@ async function run() {
             res.send(result)
         })
 
-        //getting employee pending requests
+        //getting employees pending requests
         app.get('/pending-requests/:email', async (req, res) => {
             const email = req.params.email
             const query = {
