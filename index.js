@@ -229,6 +229,16 @@ async function run() {
             res.send(result)
         })
 
+        //get limited assets
+        app.get('/limited-assets/:companyId', async (req, res) => {
+            const companyId = req.params.companyId
+            const query = {
+                $and: [{ companyId: companyId }, { quantity: { $lt: 10 } }]
+            }
+            const result = await assetCollection.find(query).toArray()
+            res.send(result)
+        })
+
         ///getting most requested assets 
         app.get('/most-requested/:companyId', async (req, res) => {
 
@@ -265,6 +275,7 @@ async function run() {
 
             res.send(result)
         })
+
 
         //user affiliation functionality
         app.put('/user-affiliation/:email', async (req, res) => {
