@@ -141,12 +141,21 @@ async function run() {
         //approving asset process
         app.put('/approve-asset/:id', async (req, res) => {
             const id = req.params.id
+
+            const quantityResult = await assetCollection.findOne({ _id: new ObjectId(id) })
+            console.log(quantityResult)
+            if (quantityResult.quantity === 0) {
+                return res.send({ quantity: 0 })
+            }
+
             const filter = { assetId: id }
             const updatedDoc = {
                 $set: {
-                    status: 'approved'
+                    status: 'approved',
+                    approveDate: new Date().toLocaleDateString('en-GB')
                 }
             }
+
             const approvalResult = await assetRequestCollection.updateOne(filter, updatedDoc)
             if (approvalResult.modifiedCount > 0) {
                 const assetDecrement = await assetCollection.updateOne({ _id: new ObjectId(id) }, { $inc: { quantity: -1 } })
