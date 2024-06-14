@@ -1,5 +1,6 @@
 const express = require('express')
 const app = express()
+const jwt = require('jsonwebtoken')
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
@@ -33,6 +34,15 @@ async function run() {
         const companyCollection = database.collection('companies')
         const assetCollection = database.collection('assets')
         const assetRequestCollection = database.collection('assetRequests')
+
+
+
+        //jwt related api
+        app.post('/jwt', async (req, res) => {
+            const user = req.body
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ token })
+        })
 
 
         //employee users create and send to database
