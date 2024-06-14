@@ -325,7 +325,7 @@ async function run() {
 
             const result = await assetRequestCollection.aggregate([
                 {
-                    $match: { companyId: companyId }
+                    $match: { companyId: companyId, status: 'pending' }
                 },
                 {
                     $group: {
@@ -355,6 +355,23 @@ async function run() {
             res.send(result)
         })
 
+        //returning asset 
+        app.put('/return-asset', async (req, res) => {
+            const requestId = req.query.requestId
+            const assetId = req.query.assetId
+            const filter = { _id: new ObjectId(requestId) }
+
+            const requestAssetUpdatedDoc = { $set: { status: 'returned' } }
+
+            const assetUpdatedDoc = { $inc: { quantity: 1 } }
+
+            const updatedRequest = await assetRequestCollection.updateOne(filter, requestAssetUpdatedDoc)
+
+            if (updatedRequest.modifiedCount > 0) {
+                const finalResult = await assetCollection.updateOne({ _id: new ObjectId(assetId) }, assetUpdatedDoc)
+                res.send(finalResult)
+            }
+        })
 
         //user affiliation functionality
         app.put('/user-affiliation/:email', async (req, res) => {
