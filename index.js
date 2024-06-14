@@ -60,7 +60,7 @@ async function run() {
         app.get('/filter-assets', async (req, res) => {
             const companyId = req.query.companyId
             const returnability = req.query.returnability
-            const availability = req.query.availability 
+            const availability = req.query.availability
 
             if (availability === 'select') {
                 const query = {
@@ -87,6 +87,97 @@ async function run() {
                 const result = await assetCollection.find(query).toArray()
                 res.send(result)
             }
+        })
+
+        //filtering request asset for employee
+        app.get('/filter-request-assets', async (req, res) => {
+            const companyId = req.query.companyId
+            const returnability = req.query.returnability
+            const availability = req.query.availability
+
+            if (availability === 'select') {
+                const query = {
+                    $and: [{ companyId: companyId }, { returnability: returnability }]
+                }
+                const result = await assetCollection.find(query).toArray()
+                res.send(result)
+            }
+
+            else if (returnability === 'select') {
+                const quantity = availability === 'available' ? { $gt: 0 } : 0
+                const query = {
+                    $and: [{ companyId: companyId }, { quantity: quantity }]
+                }
+                const result = await assetCollection.find(query).toArray()
+                res.send(result)
+            }
+
+            else {
+                const quantity = availability === 'available' ? { $gt: 0 } : 0
+                const query = {
+                    $and: [{ companyId: companyId }, { quantity: quantity }, { returnability: returnability }]
+                }
+                const result = await assetCollection.find(query).toArray()
+                res.send(result)
+            }
+        })
+
+        //filtering my assets for employee
+        app.get('/my-assets-filter', async (req, res) => {
+            const employeeEmail = req.query.employeeEmail
+            const approvalStatus = req.query.approvalStatus
+            const returnability = req.query.returnability
+
+            if (approvalStatus === 'select') {
+                const query = { $and: [{ requesterEmail: employeeEmail }, { returnability: returnability }] }
+                const result = await assetRequestCollection.find(query).toArray()
+                res.send(result)
+            }
+
+            else if (returnability === 'select') {
+                const query = { $and: [{ requesterEmail: employeeEmail }, { status: approvalStatus }] }
+                const result = await assetRequestCollection.find(query).toArray()
+                res.send(result)
+            }
+
+            else {
+                const query = { $and: [{ requesterEmail: employeeEmail }, { returnability: returnability }, { status: approvalStatus }] }
+                const result = await assetRequestCollection.find(query).toArray()
+                res.send(result)
+            }
+        })
+
+        //my-asset searching for employee
+        app.get('/my-asset-search', async (req, res) => {
+            const employeeEmail = req.query.employeeEmail
+            const keyWord = req.query.keyWord
+            const query = {
+                $and: [{ requesterEmail: employeeEmail }, { assetName: { $regex: keyWord, $options: 'i' } }]
+            }
+            const result = await assetRequestCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        //searching asset 
+        app.get('/search-asset', async (req, res) => {
+            const companyId = req.query.companyId
+            const keyWord = req.query.keyWord
+            const query = {
+                $and: [{ companyId: companyId }, { assetName: { $regex: keyWord, $options: 'i' } }]
+            }
+            const result = await assetCollection.find(query).toArray()
+            res.send(result)
+        })
+
+        //searching request asset for employee 
+        app.get('/search-request-asset', async (req, res) => {
+            const companyId = req.query.companyId
+            const keyWord = req.query.keyWord
+            const query = {
+                $and: [{ companyId: companyId }, { assetName: { $regex: keyWord, $options: 'i' } }]
+            }
+            const result = await assetCollection.find(query).toArray()
+            res.send(result)
         })
 
         ///sorting by quantity
