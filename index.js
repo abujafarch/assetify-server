@@ -38,9 +38,58 @@ async function run() {
         //employee users create and send to database
         app.post('/users', async (req, res) => {
             const user = req.body
-            console.log("i am user", user)
+            // console.log("i am user", user)
             const result = await userCollection.insertOne(user)
             res.send(result)
+        })
+
+        //login with google user data creation
+        app.post('/google-users', async (req, res) => {
+            const user = req.body
+            const query = { email: user.email }
+            const checkUser = await userCollection.findOne(query)
+            console.log(checkUser)
+            if (checkUser) {
+                return res.send({ userAlreadyExist: true })
+            }
+            const result = await userCollection.insertOne(user)
+            res.send(result)
+        })
+
+        //filtering assets by availability and returnability
+        app.get('/filter-assets', async (req, res) => {
+            const companyId = req.query.companyId
+            const returnability = req.query.returnability
+            const availability = req.query.availability
+            // const quantity = availability === 'available' ? { $gt: 0 } : 
+
+            if (availability === 'select') {
+                const query = {
+                    $and: [{ companyId: companyId }, { returnability: returnability }]
+                }
+                const result = await assetCollection.find(query).toArray()
+                res.send(result)
+            }
+
+            else if (returnability === 'select') {
+                const quantity = availability === 'available' ? { $gt: 0 } : 0
+                const query = {
+                    $and: [{ companyId: companyId }, { quantity: quantity }]
+                }
+                const result = await assetCollection.find(query).toArray()
+                res.send(result)
+            }
+            
+            else {
+                const quantity = availability === 'available' ? { $gt: 0 } : 0
+                const query = {
+                    $and: [{ companyId: companyId }, { quantity: quantity }, { returnability: returnability }]
+                }
+                const result = await assetCollection.find(query).toArray()
+                res.send(result)
+            }
+
+            console.log(companyId, availability, returnability)
         })
 
         // hrManager users create and send to database
