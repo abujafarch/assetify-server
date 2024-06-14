@@ -60,8 +60,7 @@ async function run() {
         app.get('/filter-assets', async (req, res) => {
             const companyId = req.query.companyId
             const returnability = req.query.returnability
-            const availability = req.query.availability
-            // const quantity = availability === 'available' ? { $gt: 0 } : 
+            const availability = req.query.availability 
 
             if (availability === 'select') {
                 const query = {
@@ -79,7 +78,7 @@ async function run() {
                 const result = await assetCollection.find(query).toArray()
                 res.send(result)
             }
-            
+
             else {
                 const quantity = availability === 'available' ? { $gt: 0 } : 0
                 const query = {
@@ -88,8 +87,16 @@ async function run() {
                 const result = await assetCollection.find(query).toArray()
                 res.send(result)
             }
+        })
 
-            console.log(companyId, availability, returnability)
+        ///sorting by quantity
+        app.get('/sort-by-quantity', async (req, res) => {
+            const companyId = req.query.companyId
+            const sortValue = req.query.sortValue
+            const sortOrder = sortValue === 'high to low' ? -1 : 1
+            const query = { companyId: companyId }
+            const result = await assetCollection.find(query).sort({ quantity: sortOrder }).toArray()
+            res.send(result)
         })
 
         // hrManager users create and send to database
